@@ -1,8 +1,44 @@
+# Controlled Multi-Threaded HTTP Request Lab
 
+## Overview
 
+This project is a Python-based networking lab designed to demonstrate how sockets, threading, HTTP requests, and logging work in a controlled local environment.
 
+The script creates multiple threads, where each thread sends a fixed number of HTTP GET requests to a local test server running inside a virtual machine. The goal of this lab is to understand how concurrent requests behave, how traffic can be observed in a lab network, and how logging can be used to record program activity.
 
-'''python
+This project was completed for educational purposes in a private lab environment.
+
+---
+## Lab Purpose
+
+The purpose of this lab was to learn:
+
+- How Python sockets create TCP connections
+- How HTTP GET requests are built and sent manually
+- How threading allows multiple tasks to run at the same time
+- How to log events to a file with timestamps
+- How to monitor traffic between a host machine and a virtual machine
+- How high request volume can affect a test server in a controlled environment
+
+---
+
+## Lab Environment
+
+The test was performed using a Windows host machine and a Kali Linux virtual machine.
+
+| Device | Role | IP Address | Notes |
+|---|---|---|---|
+| Windows Host | Runs the Python script | Host machine | Sends controlled HTTP requests |
+| Kali Linux VM | Runs test web server | `192.168.74.131` | Receives requests |
+| Python HTTP Server | Test service | Port `8080` | Local lab web server |
+
+The Kali VM was running a basic Python web server using:
+
+```bash
+python -m http.server 8080
+```
+
+```python
 from asyncio import threads
 import socket
 import threading
@@ -60,4 +96,5 @@ for thread in threads:
 write_log("Attack completed.")
 print("Attack completed. Check ATTACK_LOG.txt for details.")
 
-'''
+
+```
